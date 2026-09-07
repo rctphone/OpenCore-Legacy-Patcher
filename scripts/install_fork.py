@@ -140,10 +140,57 @@ def install_app():
         raise
 
 
+def remove_tree(path):
+    # FAT's AppleDouble companion can disappear when its primary file is removed.
+    def onerror(function, filename, error):
+        if not isinstance(error[1], FileNotFoundError):
+            raise error[1]
+    assert not path.is_symlink(), 'Unexpected symlink during EFI cleanup'
+    shutil.rmtree(path, onerror=onerror)
+
+
+def installed_efi_matches():
+    try:
+        return all(sha(EFI / rel) == checksum for rel, checksum in MANIFEST['efi_files'].items())
+    except FileNotFoundError:
+        return False
+
+
+def verify_recovery():
+    image = RECOVERY / 'EFI-before.img'
+    assert image.stat().st_size == PARTITION_SIZE, 'Incomplete recovery image'
+    assert sha(image) == (RECOVERY / 'EFI-before.img.sha256').read_text().split()[0], 'Recovery checksum mismatch'
+    assert sha(RECOVERY / 'config-before-fork.plist') == MANIFEST['previous_config_sha256'], 'Unexpected recovery config'
+
+
+def finish_efi():
+    assert installed_efi_matches(), 'Installed EFI does not match the reviewed build'
+    run(STAGE / 'ocvalidate', EFI / 'OC/config.plist')
+    for name in ('OC', 'BOOT'):
+        old = EFI / (name + '.fork-old')
+        if old.exists():
+            remove_tree(old)
+    run('/bin/sync')
+    run('/usr/sbin/diskutil', 'unmount', DEVICE)
+    run('/sbin/fsck_msdos', '-n', '/dev/rdisk0s1')
+    run('/usr/sbin/diskutil', 'mount', 'readOnly', DEVICE)
+    assert installed_efi_matches(), 'EFI verification after remount failed'
+
+
 def install_efi():
     # Validate the complete layout before mounting or changing the live EFI.
     for name in ('OC', 'BOOT'):
         assert (STAGE / 'EFI-build/EFI' / name).is_dir(), 'Missing staged EFI directory: ' + name
+    info = disk_info()
+    if not info.get('MountPoint'):
+        run('/usr/sbin/diskutil', 'mount', 'readOnly', DEVICE)
+    if installed_efi_matches():
+        # Resume a cleanup/remount failure without overwriting the pre-fork backup.
+        verify_recovery()
+        run('/usr/sbin/diskutil', 'unmount', DEVICE)
+        run('/usr/sbin/diskutil', 'mount', DEVICE)
+        finish_efi()
+        return
     backup_and_mount_efi()
     run('/usr/sbin/diskutil', 'unmount', DEVICE)
     run('/usr/sbin/diskutil', 'mount', DEVICE)
@@ -172,21 +219,15 @@ def install_efi():
         for name in reversed(changed):
             live, old = EFI / name, EFI / (name + '.fork-old')
             if live.exists():
-                shutil.rmtree(live)
+                remove_tree(live)
             old.rename(live)
         for name in created:
             pending = EFI / (name + '.fork-new')
             if pending.exists():
-                shutil.rmtree(pending)
+                remove_tree(pending)
         run('/bin/sync')
         raise
-    for name in changed:
-        shutil.rmtree(EFI / (name + '.fork-old'))
-    run('/bin/sync')
-    run('/usr/sbin/diskutil', 'unmount', DEVICE)
-    run('/sbin/fsck_msdos', '-n', '/dev/rdisk0s1')
-    run('/usr/sbin/diskutil', 'mount', 'readOnly', DEVICE)
-    assert sha(EFI / 'OC/config.plist') == MANIFEST['efi_files']['OC/config.plist']
+    finish_efi()
 
 
 def main():

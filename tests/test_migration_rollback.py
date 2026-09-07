@@ -34,6 +34,7 @@ class MigrationRollbackTests(unittest.TestCase):
         self.module.MANIFEST = {'efi_files': files}
         self.module.backup_and_mount_efi = lambda: None
         self.module.run = lambda *args: None
+        self.module.disk_info = lambda: {'MountPoint': str(self.module.EFI.parent)}
 
     def assert_original(self):
         for relative in ('OC/config.plist', 'BOOT/BOOTx64.efi'):
@@ -76,3 +77,37 @@ class MigrationRollbackTests(unittest.TestCase):
         for relative in self.module.MANIFEST['efi_files']:
             self.assertEqual((self.module.EFI / relative).read_bytes(), b'new-' + relative.encode())
         self.assertEqual({p.name for p in self.module.EFI.iterdir()}, {'OC', 'BOOT'})
+
+    def test_cleanup_failure_resumes_without_overwriting_recovery(self):
+        with patch.object(self.module, 'remove_tree', side_effect=PermissionError('cleanup failed')):
+            with self.assertRaises(PermissionError):
+                self.module.install_efi()
+        self.assertTrue(self.module.installed_efi_matches())
+        with patch.object(self.module, 'backup_and_mount_efi') as backup, patch.object(self.module, 'verify_recovery') as recovery:
+            self.module.install_efi()
+            backup.assert_not_called()
+            recovery.assert_called_once()
+        self.assertEqual({p.name for p in self.module.EFI.iterdir()}, {'OC', 'BOOT'})
+
+    def test_appledouble_disappears_during_cleanup(self):
+        import os
+        old = self.module.EFI / 'OC.fork-old'
+        old.mkdir()
+        primary = old / 'config.plist.bak'
+        companion = old / '._config.plist.bak'
+        primary.write_bytes(b'old config')
+        companion.write_bytes(b'metadata')
+        original_unlink = os.unlink
+        removed = []
+        def unlink_with_companion(path, **kwargs):
+            original_unlink(path, **kwargs)
+            if Path(path).name == primary.name:
+                try:
+                    original_unlink(companion)
+                    removed.append(True)
+                except FileNotFoundError:
+                    pass
+        with patch('os.unlink', side_effect=unlink_with_companion):
+            self.module.remove_tree(old)
+        self.assertFalse(old.exists())
+        self.assertTrue(removed, 'Fixture must exercise companion disappearance')

@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 import plistlib
 import subprocess
@@ -174,3 +175,20 @@ class GenerateApplication:
         self._patch_load_command()
         self._embed_git_data()
         self._embed_resources()
+        self._build_privileged_session()
+
+
+    def _build_privileged_session(self) -> None:
+        """Bundle a native child; it has no setuid bit or installed service."""
+        architecture = os.environ.get("OCLP_BUILD_ARCH", "universal2")
+        architectures = ["x86_64", "arm64"] if architecture == "universal2" else [architecture]
+        command = ["/usr/bin/xcrun", "clang", "-fobjc-arc", "-framework", "Foundation",
+                   "-mmacosx-version-min=10.13", "-O2", "-Wall", "-Wextra"]
+        for arch in architectures:
+            command.extend(["-arch", arch])
+        command.extend(["ci_tooling/privileged_session/main.m", "-o",
+                        str(self._application_output / "Contents/MacOS/oclp-privileged-session")])
+        subprocess_wrapper.run_and_verify(command, capture_output=True)
+        subprocess_wrapper.run_and_verify(["/usr/bin/codesign", "--force", "--sign", "-",
+            "--options", "runtime", str(self._application_output / "Contents/MacOS/oclp-privileged-session")],
+            capture_output=True)

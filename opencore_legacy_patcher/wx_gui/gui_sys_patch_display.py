@@ -301,6 +301,11 @@ class SysPatchDisplayFrame(wx.Frame):
 
         logging.info("Checking if new patches are needed")
 
+        from ..support.root_patch_compatibility import target_patches_current
+        if target_patches_current(self.constants, patches):
+            logging.info("Target root patches match this GUI-only fork update")
+            return False
+
         if self.constants.commit_info[0] in ["Running from source", "Built from source"]:
             return True
 

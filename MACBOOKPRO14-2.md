@@ -3,7 +3,9 @@
 This branch starts at upstream **2.4.1**, with selected upstream fixes and a
 quiet release profile for the 2017 13-inch MacBook Pro with four Thunderbolt
 ports. It is a personal development build, not an official OCLP release.
-The target system is macOS **15.7.9 (24G830)**. Hardware validation is pending.
+The target system is macOS **15.7.9 (24G830)**. The migrated root patches and
+EFI were verified after reboot; sleep and application performance remain
+separate investigations.
 
 ## Changes and provenance
 
@@ -111,12 +113,11 @@ and again after transfer. EFI generation and validation also passed on the
 actual target Mac.
 
 The custom app is installed at the standard OCLP application path; existing
-autostart entries therefore point to this fork. The first migration stage
-successfully reverted the old root patches. The restart, new root patches,
-EFI installation, and final hardware verification remain pending.
-`scripts/Continue-OCLP.command` resumes the checked local installer after the
-restart. It requires the prepared `~/OCLP-install` directory and its manifest;
-it is not a standalone installer for arbitrary Macs.
+autostart entries therefore point to this fork. Migration completed and the
+new boot was verified on 2026-09-07: PSP 1.9.7, Modern Wireless Common and T1,
+Lilu 1.7.1, RestrictEvents 1.1.7 and the quiet boot arguments are active. EFI
+installation checksums and FAT consistency checks passed. The continuation
+script is a migration tool, not a permanent application launcher.
 
 ## Local Intel packaging and administrative commands
 
@@ -124,12 +125,48 @@ it is not a standalone installer for arbitrary Macs.
 remains universal2. Use Intel Python and dependencies when selecting x86_64.
 The packaged app contains both its EFI resources and the offline support image.
 
-This personal app does not have Dortania's signing identity. Administrative
-CLI operations must be explicitly invoked with `sudo`; an already-root process
-executes its commands directly. Non-root callers still require the original
-signature-restricted helper. No debug/setuid helper with disabled signature
-checks is needed. The local app receives an ad-hoc integrity signature after
-packaging; it is not notarized or signed as an official Dortania release.
+This personal app does not have Dortania's signing identity. The next GUI
+build bundles `oclp-privileged-session`, a native, non-setuid child, and obtains
+administrator approval through macOS Authorization Services on the first
+privileged operation. The ordinary GUI keeps its user identity. The child
+receives commands only over the private inherited authorization pipe, uses a
+sanitized command environment, and exits when the application closes that
+pipe. It installs no daemon, stores no password, and does not change the
+original Dortania helper or its signature checks.
+
+Before elevation, the application verifies its fixed installed bundle path,
+root ownership, non-writability (including ACLs), internal symlink targets,
+and its complete code signature. The native child independently checks its
+fixed executable path and root-owned non-writable ancestry. Install the app
+under `/Library/Application Support/Dortania` with root ownership and no group
+or other write permissions. Preserve the standard `/Applications` symlink.
+The build requires Xcode command-line tools to compile the native child.
+It signs that child with hardened runtime and no extra entitlements. If the
+packaging process subsequently uses `codesign --deep --force`, sign the child
+again with `--options runtime`, then sign only the outer app (without `--deep`)
+to preserve that flag and restore the bundle envelope. Verify the completed
+app using `codesign --verify --deep --strict` before creating the installer.
+
+The practical personal-fork fallback uses Apple's deprecated
+[`AuthorizationExecuteWithPrivileges`](https://developer.apple.com/documentation/security/authorizationexecutewithprivileges)
+API; it is not a replacement distribution-signing identity or a generally
+installed privileged service. Native authentication on the target GUI still
+needs to be verified for this build before removing migration scaffolding.
+Use **File → Check Administrator Access…** for a read-only `id -u` test through
+the exact application privilege path, without touching root patches or EFI.
+
+Explicit `sudo` CLI invocations continue to execute directly. Source runs
+without the bundled child retain upstream helper behavior. The local app
+receives an ad-hoc integrity signature after packaging; it is not notarized
+or signed as an official Dortania release.
+
+An app-only update recognizes the already deployed `b88feb4f` root patches on
+MacBookPro14,2 / 24G830 only when support package, hardware, complete patch
+names and recipe dictionaries match. It does not report new patches just
+because GUI code changed. The original safety guard still blocks repatching
+an incompatible/dirty volume. Invalidate `DEPLOYED_COMMIT` in
+`support/root_patch_compatibility.py` whenever patching behavior or resources
+change; the narrow compatibility rule must not conceal an actual patch update.
 
 `--build --build-output /new/output/directory` exports the generated EFI before
 temporary resources are removed. An existing destination is not overwritten.
@@ -149,3 +186,11 @@ and normal EFI generation followed by the matching OpenCore 1.0.4 `ocvalidate`.
 The build test uses upstream example hardware in external-model mode; it is
 not a substitute for generation on the actual target before installation.
 Software tests do not establish sleep or Wi-Fi behaviour on the physical Mac.
+
+The GUI privilege work additionally exercises the actual native subprocess
+protocol as an ordinary user, including large binary I/O, exit status, signal
+timeouts, session reuse/EOF, sanitized environments, and child processes that
+retain output pipes. A separately compiled production worker rejects launch
+outside its installed privileged context. The suite now contains 40 tests;
+39 passed together before the final production-worker test was added, and
+all 11 privilege tests passed after that addition.

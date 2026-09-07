@@ -65,12 +65,29 @@ class GenerateMenubar:
         aboutItem = fileMenu.Append(wx.ID_ABOUT, "&About OpenCore Legacy Patcher")
         fileMenu.AppendSeparator()
         revealLogItem = fileMenu.Append(wx.ID_ANY, "&Reveal Log File")
+        adminItem = fileMenu.Append(wx.ID_ANY, "Check Administrator Access…")
 
         menubar.Append(fileMenu, "&File")
         self.frame.SetMenuBar(menubar)
 
         self.frame.Bind(wx.EVT_MENU, lambda event: gui_about.AboutFrame(self.constants), aboutItem)
         self.frame.Bind(wx.EVT_MENU, lambda event: subprocess.run(["/usr/bin/open", "--reveal", self.constants.log_filepath]), revealLogItem)
+        self.frame.Bind(wx.EVT_MENU, self.check_administrator_access, adminItem)
+
+
+    def check_administrator_access(self, event=None):
+        """Exercise the real authentication path without changing the Mac."""
+        from ..support import subprocess_wrapper
+        try:
+            result = subprocess_wrapper.run_as_root(["/usr/bin/id", "-u"], capture_output=True, text=True, check=True)
+            if result.stdout.strip() != "0":
+                raise RuntimeError("The administrator check did not run as root")
+            message = "Administrator access is working. No system files were changed."
+            logging.info(message)
+            wx.MessageBox(message, "Administrator Access", wx.OK | wx.ICON_INFORMATION, self.frame)
+        except Exception as error:
+            logging.error(f"Administrator access check failed: {error}")
+            wx.MessageBox(str(error), "Administrator Access", wx.OK | wx.ICON_ERROR, self.frame)
 
 
 class GaugePulseCallback:

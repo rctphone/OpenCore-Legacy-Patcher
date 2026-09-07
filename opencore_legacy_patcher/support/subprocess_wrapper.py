@@ -58,6 +58,13 @@ def run_as_root(*args, **kwargs) -> subprocess.CompletedProcess:
     if os.geteuid() == 0:
         return subprocess.run(*args, **kwargs)
 
+    # This personal fork cannot authenticate with Dortania's signed-only helper.
+    # The installed native child instead requires macOS administrator approval.
+    import sys
+    if getattr(sys, "frozen", False):
+        from . import privileged_session
+        return privileged_session.run(*args, **kwargs)
+
     return subprocess.run([OCLP_PRIVILEGED_HELPER] + [args[0][0]] + args[0][1:], **kwargs)
 
 

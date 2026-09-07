@@ -53,6 +53,13 @@ URLs. Identify this fork by the branch/commit URL in build metadata and by
 `#Revision/Fork-Profile` in its generated OpenCore config, not by version alone.
 Do not mistake an upstream 2.4.1 reinstall for this custom build.
 
+Starting with the next distributed build, the window title, main menu, About
+dialog and settings display `2.4.1-rctphone.1`. Increment `fork_revision` in
+`constants.py` for each subsequent distributed personal build. The technical
+upstream version stays separate for asset URLs and update comparisons; the
+commit metadata still identifies the exact source. The already installed
+build predates this visible label.
+
 ## Migration prerequisites and order
 
 Prepare the complete custom app, its offline PatcherSupportPkg, and a validated

@@ -14,6 +14,7 @@ class Constants:
     def __init__(self) -> None:
         # Patcher Versioning
         self.patcher_version:                 str = "2.4.1"  # OpenCore-Legacy-Patcher
+        self.fork_revision:                   int = 1  # Increment for each distributed personal build
         self.patcher_support_pkg_version:     str = "1.9.7"  # PatcherSupportPkg (with matching wireless/JSC backports)
         self.copyright_date:                  str = "Copyright © 2020-2025 Dortania"
         self.patcher_name:                    str = "OpenCore Legacy Patcher"
@@ -250,6 +251,11 @@ class Constants:
             os_data.os_data.sonoma,
             os_data.os_data.sequoia,
         ]
+
+    @property
+    def patcher_display_version(self) -> str:
+        """Personal build label; keep upstream asset URLs/version comparisons separate."""
+        return f"{self.patcher_version}-rctphone.{self.fork_revision}"
 
     @property
     def special_build(self):

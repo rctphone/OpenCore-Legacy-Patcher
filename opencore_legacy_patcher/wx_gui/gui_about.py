@@ -36,7 +36,7 @@ class AboutFrame(wx.Frame):
         title.Centre(wx.HORIZONTAL)
 
         # Set version
-        version = wx.StaticText(frame, label=f"Version: {self.constants.patcher_version}", pos=(-1, title.GetPosition()[1] + title.GetSize()[1] + 5))
+        version = wx.StaticText(frame, label=f"Version: {self.constants.patcher_display_version}", pos=(-1, title.GetPosition()[1] + title.GetSize()[1] + 5))
         version.SetFont(gui_support.font_factory(11, wx.FONTWEIGHT_NORMAL))
         version.Centre(wx.HORIZONTAL)
 

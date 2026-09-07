@@ -91,6 +91,24 @@ This includes generating an EFI in normal release mode and validating it with
 OpenCore 1.0.4 (`No issues found`). Python source compilation also passed.
 A distributable Intel/universal2 app has not been built or installed yet.
 
+## Local Intel packaging and administrative commands
+
+`OCLP_BUILD_ARCH=x86_64` selects an Intel-only PyInstaller build; the default
+remains universal2. Use Intel Python and dependencies when selecting x86_64.
+The packaged app contains both its EFI resources and the offline support image.
+
+This personal app does not have Dortania's signing identity. Administrative
+CLI operations must be explicitly invoked with `sudo`; an already-root process
+executes its commands directly. Non-root callers still require the original
+signature-restricted helper. No debug/setuid helper with disabled signature
+checks is needed. The local app receives an ad-hoc integrity signature after
+packaging; it is not notarized or signed as an official Dortania release.
+
+`--build --build-output /new/output/directory` exports the generated EFI before
+temporary resources are removed. An existing destination is not overwritten.
+CLI patch/unpatch operations return failure when the patcher did not report
+success, so installation scripts can stop before attempting the next step.
+
 ```sh
 python3 -m unittest discover -s tests -v
 python3 -m compileall -q opencore_legacy_patcher

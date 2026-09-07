@@ -3,6 +3,7 @@ arguments.py: CLI argument handling
 """
 
 import sys
+import shutil
 import time
 import logging
 import plistlib
@@ -101,6 +102,8 @@ class arguments:
                 time.sleep(1)
         else:
             sys_patch.PatchSysVolume(self.constants.custom_model or self.constants.computer.real_model, self.constants, None).start_patch()
+        if not self.constants.root_patcher_succeeded:
+            raise SystemExit(1)
 
 
     def _sys_unpatch_handler(self) -> None:
@@ -109,6 +112,8 @@ class arguments:
         """
         logging.info("Set System Volume unpatching")
         sys_patch.PatchSysVolume(self.constants.custom_model or self.constants.computer.real_model, self.constants, None).start_unpatch()
+        if not self.constants.root_patcher_succeeded:
+            raise SystemExit(1)
 
 
     def _sys_patch_auto_handler(self) -> None:
@@ -272,3 +277,7 @@ If you plan to create the USB for another machine, please select the "Change Mod
             self.constants.serial_settings = "None"
 
         build.BuildOpenCore(self.constants.custom_model or self.constants.computer.real_model, self.constants)
+        if self.args.build_output:
+            destination = Path(self.args.build_output).expanduser()
+            shutil.copytree(self.constants.opencore_release_folder, destination)
+            logging.info(f"- Exported EFI build to {destination}")

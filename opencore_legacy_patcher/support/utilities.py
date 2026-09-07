@@ -577,6 +577,7 @@ def fetch_staged_update(variant: str = "Update") -> tuple[str, str]:
 def check_cli_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", help="Build OpenCore", action="store_true", required=False)
+    parser.add_argument("--build-output", help="Export the built EFI to a new directory before temporary resources are removed")
     parser.add_argument("--verbose", help="Enable verbose boot", action="store_true", required=False)
     parser.add_argument("--debug_oc", help="Enable OpenCore DEBUG", action="store_true", required=False)
     parser.add_argument("--debug_kext", help="Enable kext DEBUG", action="store_true", required=False)

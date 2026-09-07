@@ -4,6 +4,7 @@ subprocess_wrapper.py: Wrapper for subprocess module to better handle errors and
 """
 
 import enum
+import os
 import logging
 import subprocess
 
@@ -50,6 +51,12 @@ def run_as_root(*args, **kwargs) -> subprocess.CompletedProcess:
     # Check if first argument exists
     if not Path(args[0][0]).exists():
         raise FileNotFoundError(f"File not found: {args[0][0]}")
+
+    # A locally built fork can be invoked explicitly with sudo. It already has
+    # root privileges and does not need Dortania's signature-restricted helper.
+    # Non-root callers still use the original, verified helper.
+    if os.geteuid() == 0:
+        return subprocess.run(*args, **kwargs)
 
     return subprocess.run([OCLP_PRIVILEGED_HELPER] + [args[0][0]] + args[0][1:], **kwargs)
 

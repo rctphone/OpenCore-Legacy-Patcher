@@ -65,9 +65,9 @@ are reverted.
 
 1. Keep one verified EFI recovery image and the existing system backup.
 2. Revert the existing root patches using OCLP; restart.
-3. Apply this fork's root patches to the restored system volume; restart.
-4. Install the previously reviewed and validated EFI and restart to apply its
-   matching kext versions and quiet profile.
+3. Apply this fork's root patches to the restored system volume.
+4. Install the previously reviewed and validated EFI, then restart to apply
+   both the root patches and matching kext versions and quiet profile.
 5. Check Wi-Fi connectivity and its menu icon, T1/Touch ID, login load, and
    lid-close sleep separately. Retain the EFI recovery copy until verified.
 
@@ -86,10 +86,22 @@ an arm64-only app built on an Apple Silicon development Mac is not suitable.
 
 ## Validation
 
-On 2026-09-07, all **13 tests passed** under Python 3.11 on the development Mac.
+On 2026-09-07, all **21 tests passed** under Intel Python 3.11 on the development Mac.
 This includes generating an EFI in normal release mode and validating it with
 OpenCore 1.0.4 (`No issues found`). Python source compilation also passed.
-A distributable Intel/universal2 app has not been built or installed yet.
+The x86_64 app was built from commit
+`b88feb4fb0f127c64202b568273ef804c26dd077`, with PatcherSupportPkg 1.9.7
+embedded for offline use. Its ad-hoc signature was verified after packaging
+and again after transfer. EFI generation and validation also passed on the
+actual target Mac.
+
+The custom app is installed at the standard OCLP application path; existing
+autostart entries therefore point to this fork. The first migration stage
+successfully reverted the old root patches. The restart, new root patches,
+EFI installation, and final hardware verification remain pending.
+`scripts/Continue-OCLP.command` resumes the checked local installer after the
+restart. It requires the prepared `~/OCLP-install` directory and its manifest;
+it is not a standalone installer for arbitrary Macs.
 
 ## Local Intel packaging and administrative commands
 

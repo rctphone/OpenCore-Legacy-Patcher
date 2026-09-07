@@ -55,12 +55,11 @@ URLs. Identify this fork by the branch/commit URL in build metadata and by
 `#Revision/Fork-Profile` in its generated OpenCore config, not by version alone.
 Do not mistake an upstream 2.4.1 reinstall for this custom build.
 
-Starting with the next distributed build, the window title, main menu, About
+In the installed GUI build, the window title, main menu, About
 dialog and settings display `2.4.1-rctphone.1`. Increment `fork_revision` in
 `constants.py` for each subsequent distributed personal build. The technical
 upstream version stays separate for asset URLs and update comparisons; the
-commit metadata still identifies the exact source. The already installed
-build predates this visible label.
+commit metadata still identifies the exact source.
 
 ## Migration prerequisites and order
 
@@ -119,13 +118,22 @@ Lilu 1.7.1, RestrictEvents 1.1.7 and the quiet boot arguments are active. EFI
 installation checksums and FAT consistency checks passed. The continuation
 script is a migration tool, not a permanent application launcher.
 
+The app-only GUI update was subsequently built from
+`5ed6e2e5fe0da44680d2c111c60af1dbb8c14a36` and installed as
+`2.4.1-rctphone.1` using the ordinary macOS Installer package. Full bundle
+signature verification passed after installation. The actual GUI
+administrator check succeeded on the target; its log confirms
+`Administrator access is working. No system files were changed.`
+The old application copy, migration staging directory and Desktop continuation
+were removed without cleanup warnings. One EFI recovery image remains.
+
 ## Local Intel packaging and administrative commands
 
 `OCLP_BUILD_ARCH=x86_64` selects an Intel-only PyInstaller build; the default
 remains universal2. Use Intel Python and dependencies when selecting x86_64.
 The packaged app contains both its EFI resources and the offline support image.
 
-This personal app does not have Dortania's signing identity. The next GUI
+This personal app does not have Dortania's signing identity. The installed GUI
 build bundles `oclp-privileged-session`, a native, non-setuid child, and obtains
 administrator approval through macOS Authorization Services on the first
 privileged operation. The ordinary GUI keeps its user identity. The child
@@ -150,8 +158,8 @@ app using `codesign --verify --deep --strict` before creating the installer.
 The practical personal-fork fallback uses Apple's deprecated
 [`AuthorizationExecuteWithPrivileges`](https://developer.apple.com/documentation/security/authorizationexecutewithprivileges)
 API; it is not a replacement distribution-signing identity or a generally
-installed privileged service. Native authentication on the target GUI still
-needs to be verified for this build before removing migration scaffolding.
+installed privileged service. Native authentication was verified from the
+installed target GUI on 2026-09-07.
 Use **File → Check Administrator Access…** for a read-only `id -u` test through
 the exact application privilege path, without touching root patches or EFI.
 
@@ -191,6 +199,6 @@ The GUI privilege work additionally exercises the actual native subprocess
 protocol as an ordinary user, including large binary I/O, exit status, signal
 timeouts, session reuse/EOF, sanitized environments, and child processes that
 retain output pipes. A separately compiled production worker rejects launch
-outside its installed privileged context. The suite now contains 40 tests;
-39 passed together before the final production-worker test was added, and
-all 11 privilege tests passed after that addition.
+outside its installed privileged context. All 40 application tests passed
+together. Four additional package tests passed, covering generated scripts
+and rollback on failures before and after the application swap.

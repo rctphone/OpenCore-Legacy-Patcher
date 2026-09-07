@@ -52,6 +52,14 @@ class MigrationRollbackTests(unittest.TestCase):
                 self.module.install_efi()
         self.assert_original()
 
+    def test_missing_boot_is_rejected_before_mounting(self):
+        shutil.rmtree(self.module.STAGE / 'EFI-build/EFI/BOOT')
+        with patch.object(self.module, 'backup_and_mount_efi') as mount:
+            with self.assertRaisesRegex(AssertionError, 'Missing staged EFI directory: BOOT'):
+                self.module.install_efi()
+            mount.assert_not_called()
+        self.assert_original()
+
     def test_failure_after_first_swap_restores_both_directories(self):
         original_rename = Path.rename
         def fail_boot_switch(source, target):

@@ -82,6 +82,7 @@ def check_assets():
     check_app(STAGE / 'OpenCore-Patcher.app')
     assert sha(STAGE / 'ocvalidate') == MANIFEST['ocvalidate_sha256'], 'Validator checksum mismatch'
     root = STAGE / 'EFI-build/EFI'
+    assert (root / 'BOOT/BOOTx64.efi').is_file(), 'Missing staged bootstrap; run repair_boot_layout.py before installation'
     actual = {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()}
     assert actual == set(MANIFEST['efi_files']), 'EFI file inventory changed'
     for name, checksum in MANIFEST['efi_files'].items():
@@ -140,6 +141,9 @@ def install_app():
 
 
 def install_efi():
+    # Validate the complete layout before mounting or changing the live EFI.
+    for name in ('OC', 'BOOT'):
+        assert (STAGE / 'EFI-build/EFI' / name).is_dir(), 'Missing staged EFI directory: ' + name
     backup_and_mount_efi()
     run('/usr/sbin/diskutil', 'unmount', DEVICE)
     run('/usr/sbin/diskutil', 'mount', DEVICE)

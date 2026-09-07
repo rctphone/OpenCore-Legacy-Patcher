@@ -70,6 +70,14 @@ hardware probe. Preserve the current absence of a forced country override.
 Ensure local access to the Mac: Wi-Fi and SSH can disappear while root patches
 are reverted.
 
+For this target's existing `EFI/BOOT` layout, run `scripts/repair_boot_layout.py`
+against the staging directory after generating its manifest and before starting
+the migration. The build export stores the bootstrap under
+`System/Library/CoreServices/boot.efi`; the script checks the pinned OpenCore
+1.0.4 binary and copies it to `EFI/BOOT/BOOTx64.efi`, updating the manifest.
+It can also repair an installation paused at `patched-efi-pending`; rerunning
+the continuation then installs EFI without repeating root patches.
+
 1. Keep one verified EFI recovery image and the existing system backup.
 2. Revert the existing root patches using OCLP; restart.
 3. Apply this fork's root patches to the restored system volume.

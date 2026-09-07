@@ -15,6 +15,7 @@ from datetime import date
 from .. import constants
 
 from ..support import utilities
+from .quiet_profile import apply_quiet_profile
 
 from .networking import (
     wired,
@@ -85,7 +86,9 @@ class BuildOpenCore:
             function(self.model, self.constants, self.config)
 
         # Work-around ocvalidate
-        if self.constants.validate is False:
+        # OpenCore 1.0.4 discovers the standard Windows loader automatically.
+        # Its validator rejects this redundant override in our target profile.
+        if self.constants.validate is False and self.model != "MacBookPro14,2":
             logging.info("- Adding bootmgfw.efi BlessOverride")
             self.config["Misc"]["BlessOverride"] += ["\\EFI\\Microsoft\\Boot\\bootmgfw.efi"]
 
@@ -162,6 +165,16 @@ class BuildOpenCore:
         if self.constants.allow_oc_everywhere is False or self.constants.allow_native_spoofs is True or (self.constants.custom_serial_number != "" and self.constants.custom_board_serial_number != ""):
             smbios.BuildSMBIOS(self.model, self.constants, self.config).set_smbios()
         support.BuildSupport(self.model, self.constants, self.config).cleanup()
+        if apply_quiet_profile(
+            self.model,
+            self.config,
+            debug_requested=any((
+                self.constants.verbose_debug,
+                self.constants.kext_debug,
+                self.constants.opencore_debug,
+            )),
+        ):
+            logging.info("- Applying rctphone MacBookPro14,2 quiet release profile")
         self._save_config()
 
         # Post-build handling

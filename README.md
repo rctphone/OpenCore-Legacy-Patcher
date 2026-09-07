@@ -1,3 +1,7 @@
+> Personal `rctphone` branch for MacBookPro14,2 and macOS Sequoia.
+> See [changes, validation and migration notes](MACBOOKPRO14-2.md).
+> This branch is based on OCLP 2.4.1 with selected upstream backports.
+
 <div align="center">
              <img src="docs/images/OC-Patcher.png" alt="OpenCore Patcher Logo" width="256" />
              <h1>OpenCore Legacy Patcher</h1>

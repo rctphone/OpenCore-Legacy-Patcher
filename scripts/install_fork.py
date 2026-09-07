@@ -144,14 +144,20 @@ def install_efi():
     run('/usr/sbin/diskutil', 'unmount', DEVICE)
     run('/usr/sbin/diskutil', 'mount', DEVICE)
     changed = []
+    created = []
     try:
+        # Stage and verify both folders before switching either live directory.
         for name in ('OC', 'BOOT'):
             live, new, old = EFI / name, EFI / (name + '.fork-new'), EFI / (name + '.fork-old')
             assert live.is_dir() and not new.exists() and not old.exists(), 'Unexpected EFI directory state'
+            created.append(name)
             shutil.copytree(STAGE / 'EFI-build/EFI' / name, new)
             for rel, checksum in MANIFEST['efi_files'].items():
                 if rel.startswith(name + '/'):
                     assert sha(new / rel[len(name) + 1:]) == checksum, 'EFI copy failed'
+        run('/bin/sync')
+        for name in ('OC', 'BOOT'):
+            live, new, old = EFI / name, EFI / (name + '.fork-new'), EFI / (name + '.fork-old')
             live.rename(old)
             changed.append(name)
             new.rename(live)
@@ -164,6 +170,10 @@ def install_efi():
             if live.exists():
                 shutil.rmtree(live)
             old.rename(live)
+        for name in created:
+            pending = EFI / (name + '.fork-new')
+            if pending.exists():
+                shutil.rmtree(pending)
         run('/bin/sync')
         raise
     for name in changed:

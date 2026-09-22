@@ -2923,6 +2923,8 @@
 				<string></string>
 				<key>LoadEarly</key>
 				<false/>
+				<key>HideVerbose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>Comment</key>
@@ -2934,6 +2936,8 @@
 				<key>Arguments</key>
 				<string></string>
 				<key>LoadEarly</key>
+				<false/>
+				<key>HideVerbose</key>
 				<false/>
 			</dict>
 			<dict>
@@ -2947,6 +2951,8 @@
 				<string></string>
 				<key>LoadEarly</key>
 				<false/>
+				<key>HideVerbose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>Comment</key>
@@ -2958,6 +2964,8 @@
 				<key>Arguments</key>
 				<string></string>
 				<key>LoadEarly</key>
+				<false/>
+				<key>HideVerbose</key>
 				<false/>
 			</dict>
 			<dict>
@@ -2971,6 +2979,8 @@
 				<string></string>
 				<key>LoadEarly</key>
 				<false/>
+				<key>HideVerbose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>Comment</key>
@@ -2982,6 +2992,8 @@
 				<key>Arguments</key>
 				<string></string>
 				<key>LoadEarly</key>
+				<false/>
+				<key>HideVerbose</key>
 				<false/>
 			</dict>
 			<dict>
@@ -2995,6 +3007,8 @@
 				<string></string>
 				<key>LoadEarly</key>
 				<false/>
+				<key>HideVerbose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>Comment</key>
@@ -3006,6 +3020,8 @@
 				<key>Arguments</key>
 				<string></string>
 				<key>LoadEarly</key>
+				<false/>
+				<key>HideVerbose</key>
 				<false/>
 			</dict>
 			<dict>
@@ -3019,6 +3035,8 @@
 				<string></string>
 				<key>LoadEarly</key>
 				<false/>
+				<key>HideVerbose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>Comment</key>
@@ -3030,6 +3048,8 @@
 				<key>Arguments</key>
 				<string></string>
 				<key>LoadEarly</key>
+				<false/>
+				<key>HideVerbose</key>
 				<false/>
 			</dict>
 			<dict>
@@ -3043,6 +3063,8 @@
 				<string></string>
 				<key>LoadEarly</key>
 				<false/>
+				<key>HideVerbose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>Comment</key>
@@ -3054,6 +3076,8 @@
 				<key>Arguments</key>
 				<string></string>
 				<key>LoadEarly</key>
+				<false/>
+				<key>HideVerbose</key>
 				<false/>
 			</dict>
 		</array>

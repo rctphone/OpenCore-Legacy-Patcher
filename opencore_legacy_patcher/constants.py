@@ -28,7 +28,7 @@ class Constants:
 
         # OpenCore Versioning
         # https://github.com/acidanthera/OpenCorePkg
-        self.opencore_version: str = "1.0.4"
+        self.opencore_version: str = "1.0.8"  # acidanthera/OpenCorePkg master 2cc2362 (ATAPI hibernation fix)
 
         # Kext Versioning
         ## Acidanthera

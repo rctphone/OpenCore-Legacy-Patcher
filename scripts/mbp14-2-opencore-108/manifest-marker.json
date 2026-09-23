@@ -1,0 +1,15 @@
+{
+  "source": "OpenCore 1.0.8 install of 2026-09-23 with OCLP-Version 2.5.1 marker",
+  "new": {
+    "BOOT/BOOTx64.efi": "7439ddbcec43b54c0cf9d69862a1b75a21fa55e9dcdd0420e3fdc9c84176a31a",
+    "OC/Drivers/OpenCanopy.efi": "be761c611c7cb6b3ca0dd4ec9f08452880227de0ff51a8a57710c56289f21915",
+    "OC/Drivers/OpenLinuxBoot.efi": "229a1a0c6e1acb7fb8f8b81417ba1d906f2cdc309958be7e5466f4c324cf2eb4",
+    "OC/Drivers/OpenRuntime.efi": "3a0c7ac90c59f725eaef0b8c0e7d98793ee39ad4812cd9bbc58519be695d6c60",
+    "OC/Drivers/ResetNvramEntry.efi": "265c49c253dc4137e698a3e38ec77248dfba2685a810bc4b12ba75730df27230",
+    "OC/OpenCore.efi": "bef71f879c4e12f1d84c92ed988e296de5db55101aea4e45b80f29e5efc0b072",
+    "OC/Tools/BootKicker.efi": "acec7af67b70279a0ebe1828dd21844dcaabd7bbb78e7debbba7199bd58fbff8",
+    "OC/Tools/OpenShell.efi": "be239857efa987e7c17ae1260453ff2f85fa76eced058b24849a71dc8b219a99",
+    "OC/config.plist": "38d61ff0c39067500a7f83ac2da93457f23279669f0fe293eb61428c889b4a2c"
+  },
+  "ocvalidate": "c76f907d5caad299889a2314ae68f03cd8538ad53f65a3c2c7c95ae0d0bb0b38"
+}

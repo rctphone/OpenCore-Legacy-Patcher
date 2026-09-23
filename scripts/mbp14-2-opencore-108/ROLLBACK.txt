@@ -1,0 +1,27 @@
+Target MacBookPro14,2, macOS 24H23, EFI disk0s1, partition UUID E626B09B-6032-4F0C-A968-B54E008AA35A.
+apply keeps two backups in backup/ next to install.py:
+  backup/before/EFI/...          the nine replaced OpenCore 1.0.4 files, SHA256-checked
+  backup/EFI-before-1.0.8.img    raw image of the whole EFI partition, SHA256 in .sha256
+
+When macOS boots, run in Terminal and restart afterwards:
+  cd ~/oclp-opencore-108-20260923
+  sudo /usr/bin/python3 -I ./install.py rollback
+
+If macOS does not boot, start Internet Recovery with Option-Command-R and open Terminal.
+If FileVault is on, unlock "Macintosh HD - Data" in Disk Utility first.
+Confirm the EFI partition with diskutil list/info before touching it; disk numbering may differ.
+Then either restore the nine files:
+  diskutil mount disk0s1
+  B="/Volumes/Macintosh HD - Data/Users/semenovi/oclp-opencore-108-20260923/backup/before/EFI"
+  cp "$B/OC/OpenCore.efi" "$B/OC/config.plist" /Volumes/EFI/EFI/OC/
+  cp "$B/OC/Drivers/"*.efi /Volumes/EFI/EFI/OC/Drivers/
+  cp "$B/OC/Tools/"*.efi /Volumes/EFI/EFI/OC/Tools/
+  cp "$B/BOOT/BOOTx64.efi" /Volumes/EFI/EFI/BOOT/
+  sync; diskutil unmount disk0s1; reboot
+or write back the whole partition image (EFI must be unmounted):
+  I="/Volumes/Macintosh HD - Data/Users/semenovi/oclp-opencore-108-20260923/backup/EFI-before-1.0.8.img"
+  shasum -a 256 "$I"      # compare with EFI-before-1.0.8.img.sha256
+  diskutil unmount disk0s1
+  dd if="$I" of=/dev/rdisk0s1 bs=1m
+  reboot
+The older full image from the fork migration stays in ~/EFI-recovery-2026-09-07/.

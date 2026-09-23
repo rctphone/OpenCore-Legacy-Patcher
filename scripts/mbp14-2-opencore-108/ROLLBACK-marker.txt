@@ -1,0 +1,13 @@
+Only EFI/OC/config.plist changes here (OCLP-Version marker 2.4.1 -> 2.5.1, #Revision OpenCore-Version 1.0.8).
+apply keeps backup/before/EFI/... (previous files) and backup/EFI-before-marker.img (whole partition).
+
+When macOS boots:
+  cd ~/oclp-opencore-108-marker-20260923
+  sudo /usr/bin/python3 -I ./install.py rollback
+
+If macOS does not boot (unlikely: OpenCore reads this key only into NVRAM), use Internet Recovery
+(Option-Command-R), unlock "Macintosh HD - Data" if FileVault is on, then:
+  diskutil mount disk0s1
+  cp "/Volumes/Macintosh HD - Data/Users/semenovi/oclp-opencore-108-marker-20260923/backup/before/EFI/OC/config.plist" /Volumes/EFI/EFI/OC/config.plist
+  sync; diskutil unmount disk0s1; reboot
+The full OpenCore 1.0.4 rollback stays in ~/oclp-opencore-108-20260923/ROLLBACK.txt.
